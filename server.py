@@ -5,7 +5,7 @@ import time
 import random
 
 WIDTH, HEIGHT = 800, 600
-BALL_SPEED = 5
+BALL_SPEED = 10
 PADDLE_SPEED = 10
 COUNTDOWN_START = 3
 
