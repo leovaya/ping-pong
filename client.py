@@ -6,6 +6,8 @@ from threading import Thread
 # ---ПУГАМЕ НАЛАШТУВАННЯ ---
 WIDTH, HEIGHT = 800, 600
 init()
+font.init()
+mixer.init()
 screen = display.set_mode((WIDTH, HEIGHT))
 clock = time.Clock()
 display.set_caption("Пінг-Понг")
@@ -41,13 +43,56 @@ def receive():
 font_win = font.Font(None, 72)
 font_main = font.Font(None, 36)
 # --- ЗОБРАЖЕННЯ ----
+BG_IMG = image.load("fotos/background.png")
+BG_IMG = transform.scale(BG_IMG, (WIDTH, HEIGHT))
+
+BALL_IMG = image.load("fotos/ball.png")
+BALL_IMG = transform.scale(BALL_IMG, (20, 20))
+
+PADDLE1_IMG = image.load("fotos/paddle1.png")
+PADDLE1_IMG = transform.rotate(PADDLE1_IMG, 90)
+PADDLE1_IMG = transform.scale(PADDLE1_IMG, (20, 100))
+
+PADDLE2_IMG = transform.flip(PADDLE1_IMG, True, False)
 
 # --- ЗВУКИ ---
+mixer.init()
+sound_plat = mixer.Sound("sound/plat.wav")
+sound_wall = mixer.Sound("sound/wall.wav")
+
+#back music
+try:
+    mixer.music.load("sound/timewaster.mp3")
+    mixer.music.play(-1)
+    mixer.music.set_volume(0.15)
+except Exception as e:
+    print("Music not found: ", e)
+
+
 
 # --- ГРА ---
 game_over = False
 winner = None
 you_winner = None
+#-----menu----
+is_menu = True
+btnPlay = transform.scale_by(image.load("fotos/play.png"), 1.5)
+playRect = btnPlay.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+while is_menu:
+    for e in event.get():
+        if e.type == QUIT:
+            exit()
+        if e.type == MOUSEBUTTONDOWN and e.button == 1:
+            if playRect.collidepoint(e.pos):
+                is_menu = False
+
+        screen.blit(BG_IMG, (0, 0))
+        screen.blit(btnPlay, playRect)
+        display.update()
+        clock.tick(60)
+
+
+
 my_id, game_state, buffer, client = connect_to_server()
 Thread(target=receive, daemon=True).start()
 while True:
@@ -88,20 +133,24 @@ while True:
         continue  # Блокує гру після перемоги
 
     if game_state:
-        screen.fill((0, 0, 130))
-        draw.rect(screen, (0, 255, 0), (20, game_state['paddles']['0'], 20, 100))
-        draw.rect(screen, (255, 0, 255), (WIDTH - 40, game_state['paddles']['1'], 20, 100))
-        draw.circle(screen, (255, 255, 255), (game_state['ball']['x'], game_state['ball']['y']), 10)
+        screen.blit(BG_IMG, (0,0))
+        screen.blit(PADDLE1_IMG, (20, game_state['paddles']['0']))
+        screen.blit(PADDLE2_IMG, (WIDTH - 40, game_state['paddles']['1']))
+        screen.blit(BALL_IMG, (game_state['ball']['x'] - 10, game_state['ball']['y'] - 10))
         score_text = font_main.render(f"{game_state['scores'][0]} : {game_state['scores'][1]}", True, (255, 255, 255))
         screen.blit(score_text, (WIDTH // 2 -25, 20))
 
         if game_state['sound_event']:
             if game_state['sound_event'] == 'wall_hit':
                 # звук відбиття м'ячика від стін
+                sound_wall.play()
                 pass
             if game_state['sound_event'] == 'platform_hit':
                 # звук відбиття м'ячика від платформи
+                sound_plat.play()
                 pass
+
+            game_state['sound_event'] = None
 
     else:
         wating_text = font_main.render(f"Очікування гравців...", True, (255, 255, 255))
@@ -112,6 +161,7 @@ while True:
 
     keys = key.get_pressed()
     if keys[K_w]:
-        client.send(b"UP")
-    elif keys[K_s]:
         client.send(b"DOWN")
+    elif keys[K_s]:
+        client.send(b"UP")
+

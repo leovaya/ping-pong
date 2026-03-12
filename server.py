@@ -5,7 +5,7 @@ import time
 import random
 
 WIDTH, HEIGHT = 800, 600
-BALL_SPEED = 10
+BALL_SPEED = 5
 PADDLE_SPEED = 10
 COUNTDOWN_START = 3
 
@@ -68,6 +68,10 @@ class GameServer:
                 except:
                     self.connected[pid] = False
 
+                # Скидаємо звук після відправки всім клієнтам!
+        if self.sound_event:
+             self.sound_event = None
+
     def ball_logic(self):
         while self.countdown > 0:
             time.sleep(1)
@@ -90,16 +94,16 @@ class GameServer:
                     self.sound_event = 'platform_hit'
 
                 if self.ball['x'] < 0:
-                    self.scores[1] += 1
+                    self.scores[1] += 5
                     self.reset_ball()
                 elif self.ball['x'] > WIDTH:
                     self.scores[0] += 1
                     self.reset_ball()
 
-                if self.scores[0] >= 10:
+                if self.scores[0] >= 60:
                     self.game_over = True
                     self.winner = 0
-                elif self.scores[1] >= 10:
+                elif self.scores[1] >= 60:
                     self.game_over = True
                     self.winner = 1
 
