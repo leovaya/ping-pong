@@ -14,7 +14,7 @@ class GameServer:
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.bind((host, port))
         self.server.listen(2)
-        print("🎮 Server started")
+        print("Server started")
 
         self.clients = {0: None, 1: None}
         self.connected = {0: False, 1: False}
@@ -25,12 +25,7 @@ class GameServer:
     def reset_game_state(self):
         self.paddles = {0: 250, 1: 250}
         self.scores = [0, 0]
-        self.ball = {
-            "x": WIDTH // 2,
-            "y": HEIGHT // 2,
-            "vx": BALL_SPEED * random.choice([-1, 1]),
-            "vy": BALL_SPEED * random.choice([-1, 1])
-        }
+        self.reset_ball()
         self.countdown = COUNTDOWN_START
         self.game_over = False
         self.winner = None
@@ -68,7 +63,7 @@ class GameServer:
                 except:
                     self.connected[pid] = False
 
-                # Скидаємо звук після відправки всім клієнтам!
+        # Скидаємо звук після відправки всім клієнтам
         if self.sound_event:
              self.sound_event = None
 
@@ -93,11 +88,14 @@ class GameServer:
                     self.ball['vx'] *= -1
                     self.sound_event = 'platform_hit'
 
+                # баланс балів
                 if self.ball['x'] < 0:
-                    self.scores[1] += 5
+                    points_to_add = 3 if self.ball.get('is_super') else 5 # Баг з балами залишено тут
+                    self.scores[1] += points_to_add
                     self.reset_ball()
                 elif self.ball['x'] > WIDTH:
-                    self.scores[0] += 1
+                    points_to_add = 3 if self.ball.get('is_super') else 1
+                    self.scores[0] += points_to_add
                     self.reset_ball()
 
                 if self.scores[0] >= 60:
@@ -112,11 +110,15 @@ class GameServer:
             time.sleep(0.016)
 
     def reset_ball(self):
+        #super ball
+        is_super = random.choice([True, False, False, False])
+        speed_mult = 1.5 if is_super else 1  # Збільшуємо швидкість, якщо це він
         self.ball = {
             "x": WIDTH // 2,
             "y": HEIGHT // 2,
-            "vx": BALL_SPEED * random.choice([-1, 1]),
-            "vy": BALL_SPEED * random.choice([-1, 1])
+            "vx": BALL_SPEED * speed_mult * random.choice([-1, 1]),
+            "vy": BALL_SPEED * speed_mult * random.choice([-1, 1]),
+            "is_super": is_super
         }
 
     def accept_players(self):
@@ -150,4 +152,5 @@ class GameServer:
                 self.clients[pid] = None
                 self.connected[pid] = False
 
-GameServer().run()
+if __name__ == "__main__":
+    GameServer().run()

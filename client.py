@@ -10,13 +10,15 @@ font.init()
 mixer.init()
 screen = display.set_mode((WIDTH, HEIGHT))
 clock = time.Clock()
-display.set_caption("Пінг-Понг")
+display.set_caption("Пінг-Понг (Модифікована версія)")
+
+
 # ---СЕРВЕР ---
 def connect_to_server():
     while True:
         try:
             client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            client.connect(('localhost', 8080)) # ---- Підключення до сервера
+            client.connect(('localhost', 8080))  # ---- Підключення до сервера
             buffer = ""
             game_state = {}
             my_id = int(client.recv(24).decode())
@@ -39,9 +41,11 @@ def receive():
             game_state["winner"] = -1
             break
 
+
 # --- ШРИФТИ ---
 font_win = font.Font(None, 72)
 font_main = font.Font(None, 36)
+
 # --- ЗОБРАЖЕННЯ ----
 BG_IMG = image.load("fotos/background.png")
 BG_IMG = transform.scale(BG_IMG, (WIDTH, HEIGHT))
@@ -60,7 +64,7 @@ mixer.init()
 sound_plat = mixer.Sound("sound/plat.wav")
 sound_wall = mixer.Sound("sound/wall.wav")
 
-#back music
+# back music
 try:
     mixer.music.load("sound/timewaster.mp3")
     mixer.music.play(-1)
@@ -68,16 +72,16 @@ try:
 except Exception as e:
     print("Music not found: ", e)
 
-
-
 # --- ГРА ---
 game_over = False
 winner = None
 you_winner = None
-#-----menu----
+
+# -----menu----
 is_menu = True
 btnPlay = transform.scale_by(image.load("fotos/play.png"), 1.5)
 playRect = btnPlay.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+
 while is_menu:
     for e in event.get():
         if e.type == QUIT:
@@ -91,10 +95,9 @@ while is_menu:
         display.update()
         clock.tick(60)
 
-
-
 my_id, game_state, buffer, client = connect_to_server()
 Thread(target=receive, daemon=True).start()
+
 while True:
     for e in event.get():
         if e.type == QUIT:
@@ -125,6 +128,7 @@ while True:
         text_rect = win_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
         screen.blit(win_text, text_rect)
 
+        #K для рестарту
         text = font_win.render('К - рестарт', True, (255, 215, 0))
         text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 120))
         screen.blit(text, text_rect)
@@ -133,23 +137,24 @@ while True:
         continue  # Блокує гру після перемоги
 
     if game_state:
-        screen.blit(BG_IMG, (0,0))
+        screen.blit(BG_IMG, (0, 0))
         screen.blit(PADDLE1_IMG, (20, game_state['paddles']['0']))
         screen.blit(PADDLE2_IMG, (WIDTH - 40, game_state['paddles']['1']))
-        screen.blit(BALL_IMG, (game_state['ball']['x'] - 10, game_state['ball']['y'] - 10))
+
+        # gold super ball
+        if game_state['ball'].get('is_super'):
+            draw.circle(screen, (255, 215, 0), (int(game_state['ball']['x']), int(game_state['ball']['y'])), 12)
+        else:
+            screen.blit(BALL_IMG, (game_state['ball']['x'] - 10, game_state['ball']['y'] - 10))
+
         score_text = font_main.render(f"{game_state['scores'][0]} : {game_state['scores'][1]}", True, (255, 255, 255))
-        screen.blit(score_text, (WIDTH // 2 -25, 20))
+        screen.blit(score_text, (WIDTH // 2 - 25, 20))
 
         if game_state['sound_event']:
             if game_state['sound_event'] == 'wall_hit':
-                # звук відбиття м'ячика від стін
                 sound_wall.play()
-                pass
             if game_state['sound_event'] == 'platform_hit':
-                # звук відбиття м'ячика від платформи
                 sound_plat.play()
-                pass
-
             game_state['sound_event'] = None
 
     else:
@@ -160,8 +165,8 @@ while True:
     clock.tick(60)
 
     keys = key.get_pressed()
+    # smth wrong
     if keys[K_w]:
         client.send(b"DOWN")
     elif keys[K_s]:
         client.send(b"UP")
-
