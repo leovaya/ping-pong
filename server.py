@@ -14,7 +14,7 @@ class GameServer:
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.bind((host, port))
         self.server.listen(2)
-        print("Server started")
+        print("🎮 Server started")
 
         self.clients = {0: None, 1: None}
         self.connected = {0: False, 1: False}
@@ -110,7 +110,7 @@ class GameServer:
             time.sleep(0.016)
 
     def reset_ball(self):
-        #super ball
+        # super ball (шанс 25%)
         is_super = random.choice([True, False, False, False])
         speed_mult = 1.5 if is_super else 1  # Збільшуємо швидкість, якщо це він
         self.ball = {

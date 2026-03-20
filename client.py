@@ -128,7 +128,6 @@ while True:
         text_rect = win_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
         screen.blit(win_text, text_rect)
 
-        #K для рестарту
         text = font_win.render('К - рестарт', True, (255, 215, 0))
         text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 120))
         screen.blit(text, text_rect)
@@ -141,7 +140,7 @@ while True:
         screen.blit(PADDLE1_IMG, (20, game_state['paddles']['0']))
         screen.blit(PADDLE2_IMG, (WIDTH - 40, game_state['paddles']['1']))
 
-        # gold super ball
+        # золотий м'яч
         if game_state['ball'].get('is_super'):
             draw.circle(screen, (255, 215, 0), (int(game_state['ball']['x']), int(game_state['ball']['y'])), 12)
         else:
@@ -165,7 +164,7 @@ while True:
     clock.tick(60)
 
     keys = key.get_pressed()
-    # smth wrong
+    # ніби не туди їде ракетка
     if keys[K_w]:
         client.send(b"DOWN")
     elif keys[K_s]:
