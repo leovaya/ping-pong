@@ -167,6 +167,6 @@ while True:
     keys = key.get_pressed()
     # smth wrong
     if keys[K_w]:
-        client.send(b"DOWN")
-    elif keys[K_s]:
         client.send(b"UP")
+    elif keys[K_s]:
+        client.send(b"DOWN")

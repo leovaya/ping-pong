@@ -90,7 +90,7 @@ class GameServer:
 
                 # баланс балів
                 if self.ball['x'] < 0:
-                    points_to_add = 3 if self.ball.get('is_super') else 5 # Баг з балами залишено тут
+                    points_to_add = 3 if self.ball.get('is_super') else 1
                     self.scores[1] += points_to_add
                     self.reset_ball()
                 elif self.ball['x'] > WIDTH:
